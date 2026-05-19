@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyneitor - Agente Fullstack</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-950 text-gray-100 h-screen flex flex-col font-sans">
+
+    <header class="p-4 bg-gray-900 border-b border-emerald-500/30 flex justify-between items-center shadow-lg shadow-black/40">
+        <div class="flex items-center gap-3">
+            <div class="bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/40">
+                <i class="fa-solid fa-brain text-emerald-400 text-xl animate-pulse"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-black tracking-wider text-white">LYNEITOR <span class="text-emerald-400 text-xs font-mono px-1.5 py-0.5 rounded bg-emerald-950 border border-emerald-800 ml-1">v1.0</span></h1>
+                <p class="text-xs text-gray-400 font-medium">Agente Experto Fullstack & Base de Datos</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 text-xs bg-gray-800 px-3 py-1.5 rounded-full border border-gray-700 text-gray-300">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Conectado a la Nube
+        </div>
+    </header>
+
+    <main id="chat-box" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 max-w-4xl mx-auto w-full">
+        <div class="bg-gray-900/60 backdrop-blur border border-gray-800 p-4 rounded-xl shadow-md">
+            <span class="text-emerald-400 font-bold block mb-1 font-mono"><i class="fa-solid fa-robot mr-1"></i> Lyneitor:</span> 
+            ¡Saludos! Soy **Lyneitor**, tu asistente fullstack. Estoy configurado en la nube para ayudarte a programar en Python, JavaScript, diseñar webs, crear bases de datos SQL o estructurar nuevas inteligencias artificiales sin límites de tokens molestos. ¿Qué software desarrollaremos hoy?
+        </div>
+    </main>
+
+    <footer class="p-4 bg-gray-900 border-t border-gray-800 shadow-2xl">
+        <form id="chat-form" class="max-w-4xl mx-auto flex gap-3">
+            <input type="text" id="user-input" placeholder="Pídele un código, una base de datos o una estructura a Lyneitor..." class="flex-1 p-3.5 rounded-xl bg-gray-800/80 border border-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-white placeholder-gray-500 transition shadow-inner">
+            <button type="submit" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-gray-950 font-extrabold px-6 rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer">
+                <span>Enviar</span> <i class="fa-solid fa-paper-plane text-xs"></i>
+            </button>
+        </form>
+    </footer>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        let chatHistory = [];
+
+        // Función mágica para copiar el código al portapapeles
+        window.copiarCodigo = function(idBoton) {
+            const pre = document.getElementById(idBoton).nextElementSibling;
+            const codigo = pre.querySelector('code').innerText;
+            
+            navigator.clipboard.writeText(codigo).then(() => {
+                const boton = document.getElementById(idBoton);
+                boton.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> ¡Copiado!`;
+                boton.classList.add('border-emerald-500/50', 'bg-emerald-950/30');
+                setTimeout(() => {
+                    boton.innerHTML = `<i class="fa-regular fa-copy"></i> Copiar código`;
+                    boton.classList.remove('border-emerald-500/50', 'bg-emerald-950/30');
+                }, 2000);
+            });
+        }
+
+        // Función para procesar y formatear la respuesta de la IA (Detecta bloques de código)
+        function formatearRespuesta(texto) {
+            const regexCodigo = /```(\w*)\n([\s\S]*?)\`\`\`/g;
+            let indice = 0;
+            
+            // Reemplaza los bloques de texto con formato de código real y su botón de copiar
+            return texto.replace(regexCodigo, (match, lenguaje, codigo) => {
+                indice++;
+                const idBoton = `btn-copy-${indice}`;
+                return `
+                    <div class="my-4 rounded-xl overflow-hidden border border-gray-800 bg-gray-950 shadow-lg">
+                        <div class="bg-gray-900 px-4 py-2 flex justify-between items-center border-b border-gray-800 text-xs text-gray-400 font-mono">
+                            <span><i class="fa-solid fa-code text-gray-500 mr-1"></i> ${lenguaje || 'code'}</span>
+                            <button id="${idBoton}" onclick="copiarCodigo('${idBoton}')" class="hover:text-white transition flex items-center gap-1 cursor-pointer bg-gray-800/50 px-2 py-1 rounded border border-gray-700 text-[11px]"><i class="fa-regular fa-copy"></i> Copiar código</button>
+                        </div>
+                        <pre class="p-4 overflow-x-auto text-sm text-emerald-300 font-mono"><code>${codigo.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+                    </div>
+                `;
+            });
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const mensaje = userInput.value.trim();
+            if (!mensaje) return;
+
+            // Renderizar mensaje tuyo
+            chatBox.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-emerald-600 text-white font-medium p-3.5 rounded-2xl rounded-tr-none max-w-[85%] shadow-md shadow-emerald-900/10">
+                        ${mensaje}
+                    </div>
+                </div>`;
+            userInput.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mensaje, historial: chatHistory })
+                });
+                const data = await res.json();
+
+                // Formateamos el texto recibido para ver si trae bloques de código
+                const respuestaFormateada = formatearRespuesta(data.respuesta);
+
+                // Renderizar respuesta de Lyneitor
+                chatBox.innerHTML += `
+                    <div class="bg-gray-900/40 border border-gray-800/80 p-4 rounded-2xl max-w-[90%] shadow-sm">
+                        <span class="text-emerald-400 font-bold block mb-2 font-mono"><i class="fa-solid fa-robot mr-1"></i> Lyneitor:</span>
+                        <div class="text-gray-200 leading-relaxed space-y-2 whitespace-pre-wrap">${respuestaFormateada}</div>
+                    </div>`;
+                
+                chatHistory.push({ role: 'user', parts: [{ text: mensaje }] });
+                chatHistory.push({ role: 'model', parts: [{ text: data.respuesta }] });
+                
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (err) {
+                chatBox.innerHTML += `<div class="bg-red-950/40 border border-red-900/50 p-4 rounded-2xl text-red-300 font-medium">Ocurrió un error al conectar con Lyneitor. Verifica tus variables en Vercel.</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
